@@ -213,24 +213,24 @@
 
 		// 初始化分页
 		if (this.options.pagination.active) {
-			var pagination;
-			pagination = $("<ul>", {"class": "wslides-pagination"});
+			this.pagination = $("<ul>", {"class": "wslides-pagination"})
 				.appendTo($element);
 
 			for (var i = 0, l = this.data.total; i < l; i++) {
 				var paginationItem, paginationLink;
 
-				paginationItem = $("<li>", {"class": "slidesjs-pagination-item"})
+				paginationItem = $("<li>", {"class": "wslides-pagination-item"})
 					.appendTo(pagination);
 
-				paginationLink = $("<a>", {"href": "#", "data-slidesjs-item": i, html: i + 1})
+				paginationLink = $("<a>", {"href": "#", "wslides-item": i, html: i + 1})
 					.appendTo(paginationItem)
 					.on('click', $.proxy(function (e) {
 						this.stop(true);
-						this.goto(($(e.currentTarget).attr("data-slidesjs-item") * 1) + 1);
+						this.goto($(e.currentTarget).attr("wlides-item") * 1 + 1);
 						e.preventDefault();
 					}, this));
 			}
+			// 设置pagination active样式
 			this.setPaginationActive();
 		}
 
@@ -256,7 +256,7 @@
 	Plugin.prototype.setPaginationActive = function (num) {
 		var current = num > -1 ? num : this.data.current;
 		$(".active").removeClass("active");
-		$(".slidesjs-pagination li:eq(" + current + ") a").addClass("active");
+		this.pagination.find("li:eq(" + current + ") a").addClass("active");
 	};
 
 	/**
@@ -267,7 +267,7 @@
 			height = (this.options.height / this.options.width) * width;
 		this.options.width = width;
 		this.options.height = height;
-		$(".slidesjs-control, .slidesjs-container").css({
+		this.slidesContainer.css({
 			width: width,
 			height: height
 		});
@@ -278,8 +278,8 @@
 	 * @param effect {String}
 	 **/
 	Plugin.prototype.next = function (effect) {
-		effect === "fade" ? this._fade() : this._slide();
-		$.data(this, "direction", "next");
+		this.direction = "next";
+		effect === "fade" ? this.fade() : this.slide();
 	};
 
 	/**
@@ -287,8 +287,8 @@
 	 * @param effect {String}
 	 **/
 	Plugin.prototype.previous = function (effect) {
-		effect === "fade" ? this._fade() : this._slide();
-		$.data(this, "direction", "previous");
+		this.direction = "previous";
+		effect === "fade" ? this.fade() : this.slide();
 	};
 
 	/**
@@ -302,16 +302,16 @@
 		if (num < 1) {
 			num = 1;
 		}
-		effect === "fade" ? this._fade() : this._slide();
+		effect === "fade" ? this.fade() : this.slide();
 	};
+
 
 	/**
 	 *
 	 *
 	 **/
-	Plugin.prototype._setuptouch = function () {
-		var slidesControl = $(".slidesjs-control"),
-			previous = this.data.current - 1,
+	Plugin.prototype.setuptouch = function () {
+		var previous = this.data.current - 1,
 			next = this.data.current + 1;
 		// 循环播放图片
 		if (previous < 0) {
@@ -320,28 +320,27 @@
 		if (next > this.data.total - 1) {
 			next = 0;
 		}
-		slidesControl.children(":eq(" + next + ")")
-			.css({
-				display: "block",
-				left: this.options.width
-			});
-		slidesControl.children(":eq(" + previous + ")")
-			.css({
-				display: "block",
-				left: -this.options.width
-			});
+		this.slidesControl.children(":eq(" + next + ")").css({
+			display: "block",
+			left: this.options.width
+		});
+		this.slidesControl.children(":eq(" + previous + ")").css({
+			display: "block",
+			left: - this.options.width
+		});
 	};
+
 
 	/**
 	 *
 	 *
 	 **/
 	Plugin.prototype.touchstart = function (e) {
-		this._setuptouch();
+		this.setuptouch();
 		var touches = e.originalEvent.touches[0];
-		$.data(this, "touchtimer", Number( new Date() ));
-		$.data(this, "touchstartx", touches.pageX);
-		$.data(this, "touchstarty", touches.pageY);
+		this.touchtimer = Number(new Date());
+		this.touchstartx = touches.pageX;
+		this.touchstarty = touches.pageY;
 		e.stopPropagation();
 	};
 
@@ -351,31 +350,32 @@
 	 **/
 	Plugin.prototype.touchend = function (e) {
 		var touches = e.originalEvent.touches[0],
-			slidesControl = $(".slidesjs-control");
+			left = this.slidesControl.position().left,
+			width = this.options.width;
 
-		if (slidesControl.position().left > this.options.width * 0.5 ||
-			slidesControl.position().left > this.options.width * 0.1 &&
+		if (left > width * 0.5 ||
+			left > width * 0.1 &&
 			(Number(new Date()) - this.data.touchtimer < 250)) {
-			$.data(this, "direction", "previous");
-			this._slide();
+			this.direction = "previous";
+			this.slide();
 
-		} else if (slidesControl.position().left < -(this.options.width * 0.5) ||
-				   slidesControl.position().left < -(this.options.width * 0.1) &&
+		} else if (left < (- width * 0.5) ||
+				   left < (- width * 0.1) &&
 				   (Number(new Date()) - this.data.touchtimer < 250)) {
-			$.data(this, "direction", "next");
-			this._slide();
+			this.direction = "next";
+			this.slide();
 
 		} else {
 			var transform = Plugin.vendorPrefix + "Transform",
 				duration  = Plugin.vendorPrefix + "TransitionDuration",
 				timing    = Plugin.vendorPrefix + "TransitionTimingFunction";
-			slidesControl[0].style[transform] = "translateX(0px)";
-			slidesControl[0].style[duration]  = this.options.effect.slide.speed * 0.85 + "ms";
+			this.slidesControl[0].style[transform] = "translateX(0px)";
+			this.slidesControl[0].style[duration]  = this.options.effect.slide.speed * 0.85 + "ms";
 			// 侦听transition end事件
-			slidesControl.one("transitionend webkitTransitionEnd oTransitionEnd otransitionend MSTransitionEnd", function() {
-				slidesControl[0].style[transform] = "";
-				slidesControl[0].style[duration]  = "";
-				slidesControl[0].style[timing]    = "";
+			this.slidesControl.one("transitionend webkitTransitionEnd oTransitionEnd otransitionend MSTransitionEnd", function() {
+				this.slidesControl[0].style[transform] = "";
+				this.slidesControl[0].style[duration]  = "";
+				this.slidesControl[0].style[timing]    = "";
 			});
 		}
 		e.stopPropagation();
