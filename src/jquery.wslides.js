@@ -1,7 +1,7 @@
 
 (function($) {
 
-	var pluginName = "wSlides",
+	var pluginName = "wslides",
 
 		defaults = {
 			// 默认幻灯片的宽度
@@ -12,26 +12,23 @@
 			start:  1,
 			// 默认导航设置
 			navigation: {
-				active: true,
-				effect: "slide"
+				active: true
 			},
 			// 默认分页设置
 			pagination: {
-				active: true,
-				effect: "slide"
+				active: true
 			},
 			// 默认播放设置
 			play: {
 				active:       true,
-				effect:       "slide",
 				interval:     5000,
 				auto:         false,
 				swap:         false,
-				// pauseOnHover: false,
 				restartDelay: 2500
 			},
+			currentEffect: 'slide',
 			// 默认动画效果设置
-			effect: {
+			effectOption: {
 				slide: {
 					speed: 500
 				},
@@ -88,6 +85,7 @@
 		return false;
 	})();
 
+
 	/**
 	 * Plugin.hasTouch
 	 * 检测当前浏览器是否支持触摸事件
@@ -112,7 +110,7 @@
 		// this.animating {Boolean}
 		this.animating = false;
 		// this.total {Number} 幻灯片的总数量
-		this.total = $el.children().not(".slidesjs-navigation").length;
+		this.total = $el.children().length;
 		// this.current {Number} 当前显示的幻灯片的索引
 		this.current = this.options.start - 1;
 		$el.css('overflow', 'hidden');
@@ -149,16 +147,16 @@
 
 		// 初始化触摸事件
 		if (Plugin.hasTouch) {
-			this.setuptouch();
-			this.slidesControl.on('touchstart', this.touchstart);
-			this.slidesControl.on('touchmove', this.touchstart);
-			this.slidesControl.on('touchend', this.touchstart);
+			this.setupTouch();
+			this.slidesControl.on('touchstart', this.touchStart);
+			this.slidesControl.on('touchmove', this.touchMove);
+			this.slidesControl.on('touchend', this.touchEnd);
 		}
 
 		// 初始化时，显示current图片，并设置zindex为10
 		this.slidesControl.children(":eq(" + this.data.current + ")").eq(0)
 			.fadeIn(0, function() {
-				$(this).css('z-index',10);
+				$(this).css('z-index', '10');
 			});
 
 		// 初始化导航
@@ -170,7 +168,7 @@
 				.appendTo($el)
 				.on('click', $.proxy(function (e) {
 					this.stop(true);
-					this.previous(this.options.navigation.effect);
+					this.previous();
 					e.preventDefault();
 				}, this));
 
@@ -179,7 +177,7 @@
 				.appendTo($el)
 				.on('click', $.proxy(function (e) {
 					this.stop(true);
-					this.next(this.options.navigation.effect);
+					this.next();
 					e.preventDefault();
 				}, this));
 		}
@@ -212,7 +210,7 @@
 		// 初始化分页
 		if (this.options.pagination.active) {
 			this.pagination = $("<ul>", {"class": "wslides-pagination"})
-				.appendTo($element);
+				.appendTo($el);
 
 			for (var i = 0, l = this.data.total; i < l; i++) {
 				var paginationItem, paginationLink;
@@ -257,6 +255,7 @@
 		this.pagination.find("li:eq(" + current + ") a").addClass("active");
 	};
 
+
 	/**
 	 * 浏览器调整时，更新幻灯片的宽与高
 	 **/
@@ -271,14 +270,16 @@
 		});
 	};
 
+
 	/**
 	 * 查看下一张幻灯片
 	 * @param effect {String}
 	 **/
-	Plugin.prototype.next = function (effect) {
+	Plugin.prototype.next = function () {
 		this.direction = "next";
-		effect === "fade" ? this.fade() : this.slide();
+		this.currentEffect === "fade" ? this.fade() : this.slide();
 	};
+
 
 	/**
 	 * 查看下一张幻灯片
@@ -286,21 +287,22 @@
 	 **/
 	Plugin.prototype.previous = function (effect) {
 		this.direction = "previous";
-		effect === "fade" ? this.fade() : this.slide();
+		this.currentEffect === "fade" ? this.fade() : this.slide();
 	};
+
 
 	/**
 	 * 查看某张幻灯片
 	 * @param num {Number}
 	 **/
 	Plugin.prototype.goto = function (num) {
-		if (num > this.data.total) {
-			num = this.data.total;
+		if (num > this.total) {
+			num = this.total;
 		}
 		if (num < 1) {
 			num = 1;
 		}
-		effect === "fade" ? this.fade() : this.slide();
+		this.currentEffect === "fade" ? this.fade() : this.slide();
 	};
 
 
@@ -308,14 +310,14 @@
 	 *
 	 *
 	 **/
-	Plugin.prototype.setuptouch = function () {
-		var previous = this.data.current - 1,
-			next = this.data.current + 1;
+	Plugin.prototype.setupTouch = function () {
+		var previous = this.current - 1,
+			next = this.current + 1;
 		// 循环播放图片
 		if (previous < 0) {
-			previous = this.data.total - 1;
+			previous = this.total - 1;
 		}
-		if (next > this.data.total - 1) {
+		if (next > this.total - 1) {
 			next = 0;
 		}
 		this.slidesControl.children(":eq(" + next + ")").css({
@@ -333,8 +335,8 @@
 	 *
 	 *
 	 **/
-	Plugin.prototype.touchstart = function (e) {
-		this.setuptouch();
+	Plugin.prototype.touchStart = function (e) {
+		this.setupTouch();
 		var touches = e.originalEvent.touches[0];
 		this.touchtimer = Number(new Date());
 		this.touchstartx = touches.pageX;
@@ -342,24 +344,25 @@
 		e.stopPropagation();
 	};
 
+
 	/**
 	 *
 	 *
 	 **/
-	Plugin.prototype.touchend = function (e) {
+	Plugin.prototype.touchEnd = function (e) {
 		var touches = e.originalEvent.touches[0],
 			left = this.slidesControl.position().left,
 			width = this.options.width;
 
 		if (left > width * 0.5 ||
 			left > width * 0.1 &&
-			(Number(new Date()) - this.data.touchtimer < 250)) {
+			(Number(new Date()) - this.touchtimer < 250)) {
 			this.direction = "previous";
 			this.slide();
 
 		} else if (left < (- width * 0.5) ||
 				   left < (- width * 0.1) &&
-				   (Number(new Date()) - this.data.touchtimer < 250)) {
+				   (Number(new Date()) - this.touchtimer < 250)) {
 			this.direction = "next";
 			this.slide();
 
@@ -384,7 +387,7 @@
 	 *
 	 *
 	 **/
-	Plugin.prototype.touchmove = function (e) {
+	Plugin.prototype.touchMove = function (e) {
 		var	touches = e.originalEvent.touches[0],
 			transform = Plugin.vendorPrefix + "Transform";
 		this.scrolling = Math.abs(touches.pageX - this.touchstartx) < Math.abs(touches.pageY - this.touchstarty);
@@ -401,18 +404,12 @@
 	 *
 	 * @todo setTimeout中this的指向
 	 **/
-	Plugin.prototype.play = function (next) {
+	Plugin.prototype.play = function () {
 		if (this.playInterval) {
-			var 
-			if (next) {
-				// var currentSlide = this.current;
-				this.direction = "next";
-				this.options.play.effect === "fade" ? this.fade() : this.silde();
-			}
+			// 注册自动循环播放事件
 			this.playInterval = setInterval($.proxy(function() {
-				// var currentSlide = this.current;
 				this.direction = "next";
-				this.slide();
+				this.currentEffect === 'fade' ? this.fade() : this.slide();
 			}, this), this.options.play.interval);
 
 			this.playing = true;
@@ -448,10 +445,11 @@
 	 **/
 	Plugin.prototype.slide = function (number) {
 
-		var vector, next, value,
-
 		var currentSlide = this.current,
-			width = this.options.width;
+			width = this.options.width,
+			vector,
+			next,
+			value;
 
 		// 如果幻灯片不在运动中，且导航不是当前
 		if (!this.animating && number !== currentSlide + 1) {
@@ -467,11 +465,10 @@
 				next = currentSlide + value;
 			}
 
-			// Loop from first to last slide
+			// 循环播放幻灯片
 			if (next === -1) {
 				next = this.total - 1;
 			}
-			// Loop from last to first slide
 			if (next === this.total) {
 				next = 0;
 			}
@@ -479,7 +476,6 @@
 			this.setPaginationActive(next);
 
 			var slidesControl = this.slidesControl;
-
 			slidesControl.children(":eq(" + next + ")")
 				.css({
 					display: "block",
