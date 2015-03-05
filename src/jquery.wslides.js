@@ -186,10 +186,8 @@
 
 		// 初始化自动播放功能
 		if (this.options.play.active) {
-			var playBtn, stopBtn;
-
 			// 添加play-button及侦听其click事件
-			playBtn = $("<a>", {"class": "wslides-play wslides-navigation", href: "#", title: "Play", text: "Play"})
+			this.playBtn = $("<a>", {"class": "wslides-play wslides-navigation", href: "#", title: "Play", text: "Play"})
 				.appendTo($el)
 				.on('click', $.proxy(function (e) {
 					this.play(true);
@@ -197,7 +195,7 @@
 				}, this));
 
 			// 添加stop-button及侦听其click事件
-			stopBtn = $("<a>", {"class": "wslides-stop wslides-navigation", href: "#", title: "Stop", text: "Stop"})
+			this.stopBtn = $("<a>", {"class": "wslides-stop wslides-navigation", href: "#", title: "Stop", text: "Stop"})
 				.appendTo($el)
 				.on('click', $.proxy(function (e) {
 					this.stop(true);
@@ -381,51 +379,45 @@
 		e.stopPropagation();
 	};
 
+
 	/**
 	 *
 	 *
 	 **/
 	Plugin.prototype.touchmove = function (e) {
-		var slidesControl = $(".slidesjs-control"),
-			touches       = e.originalEvent.touches[0],
-			transform     = Plugin.vendorPrefix + "Transform";
-		$.data(this, "scrolling", Math.abs(touches.pageX - this.data.touchstartx) < Math.abs(touches.pageY - this.data.touchstarty));
-		if (!this.data.animating && !this.data.scrolling) {
+		var	touches = e.originalEvent.touches[0],
+			transform = Plugin.vendorPrefix + "Transform";
+		this.scrolling = Math.abs(touches.pageX - this.touchstartx) < Math.abs(touches.pageY - this.touchstarty);
+		if (!this.data.animating && !this.scrolling) {
 			e.preventDefault();
-			this._setuptouch();
-			slidesControl[0].style[transform] = "translateX(" + (touches.pageX - this.data.touchstartx) + "px)";
+			this.setuptouch();
+			this.slidesControl[0].style[transform] = "translateX(" + (touches.pageX - this.touchstartx) + "px)";
 		}
 		e.stopPropagation();
 	};
+
 
 	/**
 	 *
 	 * @todo setTimeout中this的指向
 	 **/
 	Plugin.prototype.play = function (next) {
-		var _this = this;
-
 		if (this.playInterval) {
-
+			var 
 			if (next) {
-				var currentSlide = this.data.current;
-				this.data.direction = "next";
-				if (this.options.play.effect === "fade") {
-					this._fade();
-				} else {
-					this._slide();
-				}
+				// var currentSlide = this.current;
+				this.direction = "next";
+				this.options.play.effect === "fade" ? this.fade() : this.silde();
 			}
-
-			this.playInterval = setInterval(function() {
-				currentSlide = _this.data.current;
-				_this.data.direction = "next";
-				_this._slide();
-			}), this.options.play.interval);
+			this.playInterval = setInterval($.proxy(function() {
+				// var currentSlide = this.current;
+				this.direction = "next";
+				this.slide();
+			}, this), this.options.play.interval);
 
 			this.playing = true;
 
-			$(".slidesjs-play").addClass("slidesjs-playing");
+			this.playBtn.addClass("wslides-playing");
 
 			if (this.options.play.swap) {
 				$(".slidesjs-play").hide();
@@ -433,6 +425,7 @@
 			}
 		}
 	};
+
 
 	/**
 	 *
@@ -442,50 +435,50 @@
 		clearInterval(this.playInterval);
 		this.playInterval = null;
 		this.playing = false;
-		$(".slidesjs-play").removeClass("slidesjs-playing");
+		this.playBtn.removeClass("wslides-playing");
 		if (this.options.play.swap) {
 			$(".slidesjs-stop").hide();
 			$(".slidesjs-play").show();
 		}
 	};
 
+
 	/**
 	 * number 幻灯片的索引
 	 **/
-	Plugin.prototype._slide = function(number) {
+	Plugin.prototype.slide = function (number) {
 
-		var direction, next, value,
-			_this = this;
-		var $element = $(this.element);
-		var currentSlide = this.data.current;
+		var vector, next, value,
+
+		var currentSlide = this.current,
+			width = this.options.width;
 
 		// 如果幻灯片不在运动中，且导航不是当前
-		if (!this.data.animating && number !== currentSlide + 1) {
-			$.data(this, "animating", true);
-			// this.animating = true;
+		if (!this.animating && number !== currentSlide + 1) {
+			this.animating = true;
 			if (number > -1) {
 				number = number - 1;
 				value = (number > currentSlide) ? 1 : -1;
-				direction = (number > currentSlide) ? -this.options.width : this.options.width;
+				vertor = (number > currentSlide) ? - width: width;
 				next = number;
 			} else {
-				value = this.data.direction === "next" ? 1 : -1;
-				direction = this.data.direction === "next" ? -this.options.width : this.options.width;
+				value = this.direction === "next" ? 1 : -1;
+				vector = this.direction === "next" ? - width : width;
 				next = currentSlide + value;
 			}
 
 			// Loop from first to last slide
 			if (next === -1) {
-				next = this.data.total - 1;
+				next = this.total - 1;
 			}
 			// Loop from last to first slide
-			if (next === this.data.total) {
+			if (next === this.total) {
 				next = 0;
 			}
 
 			this.setPaginationActive(next);
 
-			var slidesControl = $(".slidesjs-control");
+			var slidesControl = this.slidesControl;
 
 			slidesControl.children(":eq(" + next + ")")
 				.css({
@@ -556,7 +549,7 @@
 		}
 	};
 
-	Plugin.prototype._fade = function(i) {
+	Plugin.prototype.fade = function(i) {
 		var _this = this;
 		if (!this.data.animating && number !== this.data.current + 1) {
 			$.data(this, "animating", true);
