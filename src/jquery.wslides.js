@@ -420,8 +420,8 @@
 			this.playBtn.addClass("wslides-playing");
 
 			if (this.options.play.swap) {
-				$(".slidesjs-play").hide();
-				$(".slidesjs-stop").show();
+				$(".wslides-play").hide();
+				$(".wslides-stop").show();
 			}
 		}
 	};
@@ -437,8 +437,8 @@
 		this.playing = false;
 		this.playBtn.removeClass("wslides-playing");
 		if (this.options.play.swap) {
-			$(".slidesjs-stop").hide();
-			$(".slidesjs-play").show();
+			$(".wslides-stop").hide();
+			$(".wslides-play").show();
 		}
 	};
 
@@ -501,7 +501,7 @@
 				slidesControl[0].style[transform] = "translateX(" + direction + "px)"; // @direction 为移动的距离
 				slidesControl[0].style[duration] = this.options.effect.slide.speed + "ms"; // @speed 为移动的速度
 				// 侦听transition end事件一次
-				slidesControl.one("transitionend webkitTransitionEnd oTransitionEnd otransitionend MSTransitionEnd", function() {
+				slidesControl.one("transitionend webkitTransitionEnd oTransitionEnd otransitionend MSTransitionEnd", $.proxy(function() {
 					// 过渡动画结束时，
 					// 重置Transform和TransitionDuration
 					slidesControl[0].style[transform] = "";
@@ -517,65 +517,62 @@
 							left: 0,
 							zIndex: 0
 						});
-
-					$.data(_this, "current", next);
-					$.data(_this, "animating", false);
-					
-					if (_this.data.touch) {
-						_this._setuptouch();
-					}
-					return _this.options.callback.complete(next + 1);
-				});
+				}, this));
 
 			} else {
-
 				slidesControl.stop().animate({
 					left: direction
-				}, this.options.effect.slide.speed, (function() {
+				}, this.options.effect.slide.speed, function() {
 					slidesControl.css({
 						left: 0
 					});
 					slidesControl.children(":eq(" + next + ")").css({
 						left: 0
 					});
-					return slidesControl.children(":eq(" + currentSlide + ")").css({
+					slidesControl.children(":eq(" + currentSlide + ")").css({
 						display: "none",
 						left: 0,
 						zIndex: 0
-					}, $.data(_this, "current", next), $.data(_this, "animating", false), _this.options.callback.complete(next + 1));
-				}));
-
+					});
+				});
 			}
+
+			this.current = next;
+			this.animating = false;
+			if (this.touch) {
+				this.setuptouch();
+			}
+			this.options.callback.complete(next + 1);
 		}
 	};
 
-	Plugin.prototype.fade = function(i) {
-		var _this = this;
-		if (!this.data.animating && number !== this.data.current + 1) {
-			$.data(this, "animating", true);
-			var currentSlide = this.data.current;
-			var next;
-			var value;
+
+	Plugin.prototype.fade = function (i) {
+		if (!this.animating && number !== this.current + 1) {
+			this.animating = true;
+			var currentSlide = this.data.current,
+				next,
+				value;
 
 			if (i) {
 				i = i - 1;
 				value = i > currentSlide ? 1 : -1;
 				next = i;
 			} else {
-				value = this.data.direction === "next" ? 1 : -1;
+				value = this.direction === "next" ? 1 : -1;
 				next = currentSlide + value;
 			}
 
 			if (next === -1) {
-				next = this.data.total - 1;
+				next = this.total - 1;
 			}
-			if (next === this.data.total) {
+			if (next === this.total) {
 				next = 0;
 			}
 
 			this.setPaginationActive(next);
 
-			var slidesControl = $(".slidesjs-control");
+			var slidesControl = this.slidesControl;
 
 			slidesControl.children(":eq(" + next + ")")
 				.css({
@@ -588,37 +585,33 @@
 
 			if (this.options.effect.fade.crossfade) {
 
-				slidesControl.children(":eq(" + this.data.current + ")")
+				slidesControl.children(":eq(" + this.current + ")")
 					.stop()
 					.fadeOut(this.options.effect.fade.speed);
 
 				slidesControl.children(":eq(" + next + ")")
 					.stop()
-					.fadeIn(this.options.effect.fade.speed, function() {
-						slidesControl.children(":eq(" + next + ")").css({
-							zIndex: 0
-						});
-						$.data(_this, "animating", false);
-						$.data(_this, "current", next);
-						_this.options.callback.complete(next + 1);
-					});
+					.fadeIn(this.options.effect.fade.speed, $.proxy(function() {
+						slidesControl.children(":eq(" + next + ")").css('z-index', '0');
+						this.animating = false;
+						this.current = next;
+						this.options.callback.complete(next + 1);
+					}, this));
 
 			} else {
 
 				slidesControl.children(":eq(" + currentSlide + ")")
 					.stop()
-					.fadeOut(this.options.effect.fade.speed, function() {
-					slidesControl.children(":eq(" + next + ")")
-						.stop()
-						.fadeIn(_this.options.effect.fade.speed, function() {
-							return slidesControl.children(":eq(" + next + ")").css({
-								zIndex: 10
+					.fadeOut(this.options.effect.fade.speed, $.proxy(function() {
+						slidesControl.children(":eq(" + next + ")")
+							.stop()
+							.fadeIn(this.options.effect.fade.speed, function() {
+								slidesControl.children(":eq(" + next + ")").css('z-index', '10');
 							});
-						});
-						$.data(_this, "animating", false);
-						$.data(_this, "current", next);
-						_this.options.callback.complete(next + 1);
-					});
+							this.animating = false;
+							this.current = next;
+							this.options.callback.complete(next + 1);
+					}, this));
 			}
 		}
 	};
