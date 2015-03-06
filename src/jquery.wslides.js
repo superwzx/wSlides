@@ -28,7 +28,7 @@
 			},
 			currentEffect: 'slide',
 			// 默认动画效果设置
-			effectOption: {
+			effectOptions: {
 				slide: {
 					speed: 500
 				},
@@ -148,13 +148,13 @@
 		// 初始化触摸事件
 		if (Plugin.hasTouch) {
 			this.setupTouch();
-			this.slidesControl.on('touchstart', this.touchStart);
-			this.slidesControl.on('touchmove', this.touchMove);
-			this.slidesControl.on('touchend', this.touchEnd);
+			this.slidesControl.on('touchstart', $.proxy(this.touchStart, this));
+			this.slidesControl.on('touchmove', $.proxy(this.touchMove, this));
+			this.slidesControl.on('touchend', $.proxy(this.touchEnd, this));
 		}
 
 		// 初始化时，显示current图片，并设置zindex为10
-		this.slidesControl.children(":eq(" + this.data.current + ")").eq(0)
+		this.slidesControl.children(":eq(" + this.current + ")").eq(0)
 			.fadeIn(0, function() {
 				$(this).css('z-index', '10');
 			});
@@ -212,17 +212,17 @@
 			this.pagination = $("<ul>", {"class": "wslides-pagination"})
 				.appendTo($el);
 
-			for (var i = 0, l = this.data.total; i < l; i++) {
+			for (var i = 0, l = this.total; i < l; i++) {
 				var paginationItem, paginationLink;
 
 				paginationItem = $("<li>", {"class": "wslides-pagination-item"})
-					.appendTo(pagination);
+					.appendTo(this.pagination);
 
 				paginationLink = $("<a>", {"href": "#", "wslides-item": i, html: i + 1})
 					.appendTo(paginationItem)
 					.on('click', $.proxy(function (e) {
 						this.stop(true);
-						this.goto($(e.currentTarget).attr("wlides-item") * 1 + 1);
+						this.goto(+e.currentTarget.getAttribute("wslides-item") + 1);
 						e.preventDefault();
 					}, this));
 			}
@@ -250,7 +250,7 @@
 	 * @param num {Number}
 	 **/
 	Plugin.prototype.setPaginationActive = function (num) {
-		var current = num > -1 ? num : this.data.current;
+		var current = num > -1 ? num : this.current;
 		$(".active").removeClass("active");
 		this.pagination.find("li:eq(" + current + ") a").addClass("active");
 	};
@@ -285,7 +285,7 @@
 	 * 查看下一张幻灯片
 	 * @param effect {String}
 	 **/
-	Plugin.prototype.previous = function (effect) {
+	Plugin.prototype.previous = function () {
 		this.direction = "previous";
 		this.currentEffect === "fade" ? this.fade() : this.slide();
 	};
@@ -295,19 +295,19 @@
 	 * 查看某张幻灯片
 	 * @param num {Number}
 	 **/
-	Plugin.prototype.goto = function (num) {
-		if (num > this.total) {
-			num = this.total;
+	Plugin.prototype.goto = function (number) {
+		if (number > this.total) {
+			number = this.total;
 		}
-		if (num < 1) {
-			num = 1;
+		if (number < 1) {
+			number = 1;
 		}
-		this.currentEffect === "fade" ? this.fade() : this.slide();
+		this.currentEffect === "fade" ? this.fade(number) : this.slide(number);
 	};
 
 
 	/**
-	 *
+	 * 在支持触摸的设备中，安装触摸事件
 	 *
 	 **/
 	Plugin.prototype.setupTouch = function () {
@@ -332,7 +332,7 @@
 
 
 	/**
-	 *
+	 * 定义touchStart事件
 	 *
 	 **/
 	Plugin.prototype.touchStart = function (e) {
@@ -346,7 +346,7 @@
 
 
 	/**
-	 *
+	 * 定义touchEnd事件
 	 *
 	 **/
 	Plugin.prototype.touchEnd = function (e) {
@@ -360,8 +360,8 @@
 			this.direction = "previous";
 			this.slide();
 
-		} else if (left < (- width * 0.5) ||
-				   left < (- width * 0.1) &&
+		} else if (left < (-width * 0.5) ||
+				   left < (-width * 0.1) &&
 				   (Number(new Date()) - this.touchtimer < 250)) {
 			this.direction = "next";
 			this.slide();
@@ -371,7 +371,7 @@
 				duration  = Plugin.vendorPrefix + "TransitionDuration",
 				timing    = Plugin.vendorPrefix + "TransitionTimingFunction";
 			this.slidesControl[0].style[transform] = "translateX(0px)";
-			this.slidesControl[0].style[duration]  = this.options.effect.slide.speed * 0.85 + "ms";
+			this.slidesControl[0].style[duration]  = this.options.effectOptions.slide.speed * 0.85 + "ms";
 			// 侦听transition end事件
 			this.slidesControl.one("transitionend webkitTransitionEnd oTransitionEnd otransitionend MSTransitionEnd", function() {
 				this.slidesControl[0].style[transform] = "";
@@ -384,16 +384,16 @@
 
 
 	/**
-	 *
+	 * 定义touchMove事件
 	 *
 	 **/
 	Plugin.prototype.touchMove = function (e) {
 		var	touches = e.originalEvent.touches[0],
 			transform = Plugin.vendorPrefix + "Transform";
 		this.scrolling = Math.abs(touches.pageX - this.touchstartx) < Math.abs(touches.pageY - this.touchstarty);
-		if (!this.data.animating && !this.scrolling) {
+		if (!this.animating && !this.scrolling) {
 			e.preventDefault();
-			this.setuptouch();
+			this.setupTouch();
 			this.slidesControl[0].style[transform] = "translateX(" + (touches.pageX - this.touchstartx) + "px)";
 		}
 		e.stopPropagation();
@@ -401,8 +401,8 @@
 
 
 	/**
-	 *
-	 * @todo setTimeout中this的指向
+	 * play方法，点击play按钮调用
+	 * 
 	 **/
 	Plugin.prototype.play = function () {
 		if (this.playInterval) {
@@ -425,14 +425,16 @@
 
 
 	/**
-	 *
-	 * @todo setTimeout中this的指向
+	 * stop方法，点击stop按钮调用
+	 * 
 	 **/
 	Plugin.prototype.stop = function (clicked) {
 		clearInterval(this.playInterval);
 		this.playInterval = null;
 		this.playing = false;
-		this.playBtn.removeClass("wslides-playing");
+		if (this.options.play.active) {
+			this.playBtn.removeClass("wslides-playing");
+		}
 		if (this.options.play.swap) {
 			$(".wslides-stop").hide();
 			$(".wslides-play").show();
@@ -441,28 +443,33 @@
 
 
 	/**
-	 * number 幻灯片的索引
+	 * 幻灯片滑动方法
+	 * @param number {Number} 幻灯片的索引
 	 **/
 	Plugin.prototype.slide = function (number) {
 
-		var currentSlide = this.current,
-			width = this.options.width,
-			vector,
-			next,
-			value;
-
-		// 如果幻灯片不在运动中，且导航不是当前
+		// 如果幻灯片不在运动中（即animating状态为false时），
+		// 且要移动的位置不是当前
 		if (!this.animating && number !== currentSlide + 1) {
+			var currentSlide = this.current,
+				width = this.options.width,
+				vector,
+				next,
+				value;
+			// 设置animating状态为true
 			this.animating = true;
-			if (number > -1) {
+			// 如果定义了number，则向前或向后移动(number － 1)个单位
+			if (number) {
 				number = number - 1;
-				value = (number > currentSlide) ? 1 : -1;
-				vertor = (number > currentSlide) ? - width: width;
-				next = number;
+				value  = number > currentSlide ? 1 : -1;
+				vector = number > currentSlide ? - width: width;
+				next   = number;
+
+			// 如果未定义number，则默认向前或向后移动一个单位
 			} else {
-				value = this.direction === "next" ? 1 : -1;
+				value  = this.direction === "next" ? 1 : -1;
 				vector = this.direction === "next" ? - width : width;
-				next = currentSlide + value;
+				next   = currentSlide + value;
 			}
 
 			// 循环播放幻灯片
@@ -473,9 +480,11 @@
 				next = 0;
 			}
 
+			// 设置pagination的状态
 			this.setPaginationActive(next);
 
 			var slidesControl = this.slidesControl;
+			// 设置要移动到视窗前幻灯片的样式
 			slidesControl.children(":eq(" + next + ")")
 				.css({
 					display: "block",
@@ -483,30 +492,28 @@
 					zIndex: 10
 				});
 
+			// 执行start回调
 			this.options.callback.start(currentSlide + 1);
 
-			// 如果浏览器支持css3的transition属性
-			// 就是用css3动画
-			// 否则使用jquery动画
+			// 如果设备支持transition属性，就是用css3 transition动画；
 			if (Plugin.vendorPrefix) {
-				// 缓存样式前缀
 				var transform = Plugin.vendorPrefix + "Transform",
 					duration = Plugin.vendorPrefix + "TransitionDuration";
 				// 设置幻灯片的Transform和TransitionDuration
-				// 制造动画效果
-				slidesControl[0].style[transform] = "translateX(" + direction + "px)"; // @direction 为移动的距离
-				slidesControl[0].style[duration] = this.options.effect.slide.speed + "ms"; // @speed 为移动的速度
-				// 侦听transition end事件一次
+				// 设置transition动画属性
+				slidesControl[0].style[transform] = "translateX(" + vector + "px)"; // @direction 为移动的距离
+				slidesControl[0].style[duration] = this.options.effectOptions.slide.speed + "ms"; // @speed 为移动的速度
+				// 侦听transition end事件，结束时销毁
 				slidesControl.one("transitionend webkitTransitionEnd oTransitionEnd otransitionend MSTransitionEnd", $.proxy(function() {
-					// 过渡动画结束时，
 					// 重置Transform和TransitionDuration
 					slidesControl[0].style[transform] = "";
 					slidesControl[0].style[duration] = "";
-					// 重置幻灯片的样式
+					// 重置当前幻灯片的样式
 					slidesControl.children(":eq(" + next + ")")
 						.css({
 							left: 0
 						});
+						// 重置非当前幻灯片的样式
 					slidesControl.children(":not(:eq(" + next + "))")
 						.css({
 							display: "none",
@@ -515,10 +522,12 @@
 						});
 				}, this));
 
+			// 否则使用jquery动画
 			} else {
 				slidesControl.stop().animate({
 					left: direction
 				}, this.options.effect.slide.speed, function() {
+					// 动画结束时重置样式
 					slidesControl.css({
 						left: 0
 					});
@@ -532,33 +541,49 @@
 					});
 				});
 			}
-
+			// 更新current属性
 			this.current = next;
+			// 更新animating为false
 			this.animating = false;
-			if (this.touch) {
-				this.setuptouch();
+			// 重置touch事件
+			if (Plugin.hasTouch) {
+				this.setupTouch();
 			}
+			// 执行slide结束回调
 			this.options.callback.complete(next + 1);
 		}
 	};
 
 
-	Plugin.prototype.fade = function (i) {
+	/**
+	 * 幻灯片滑动方法
+	 * @param number {Number} 幻灯片的索引
+	 **/
+	Plugin.prototype.fade = function (number) {
+		// 如果幻灯片不在运动中（即animating状态为false时），
+		// 且要移动的位置不是当前
 		if (!this.animating && number !== this.current + 1) {
-			this.animating = true;
+
 			var currentSlide = this.data.current,
 				next,
 				value;
 
-			if (i) {
-				i = i - 1;
-				value = i > currentSlide ? 1 : -1;
-				next = i;
+			// 设置animating状态为true
+			this.animating = true;
+
+			// 如果定义了number，则向前或向后移动(number － 1)个单位
+			if (number) {
+				number = number - 1;
+				value  = number > currentSlide ? 1 : -1;
+				next   = number;
+
+			// 如果未定义number，则默认向前或向后移动一个单位
 			} else {
 				value = this.direction === "next" ? 1 : -1;
-				next = currentSlide + value;
+				next  = currentSlide + value;
 			}
 
+			// 循环播放幻灯片
 			if (next === -1) {
 				next = this.total - 1;
 			}
@@ -566,10 +591,11 @@
 				next = 0;
 			}
 
+			// 设置pagination的状态
 			this.setPaginationActive(next);
 
 			var slidesControl = this.slidesControl;
-
+			// 设置要移动到视窗前幻灯片的样式
 			slidesControl.children(":eq(" + next + ")")
 				.css({
 					display: "none",
@@ -577,25 +603,32 @@
 					zIndex: 10
 				});
 
+			// 执行start回调
 			this.options.callback.start(currentSlide + 1);
 
-			if (this.options.effect.fade.crossfade) {
-
+			// 如果淡入淡出动画有过渡效果
+			if (this.options.effectOption.fade.crossfade) {
+				// 执行过渡动画，fadeOut当前幻灯片
 				slidesControl.children(":eq(" + this.current + ")")
 					.stop()
 					.fadeOut(this.options.effect.fade.speed);
 
+				// 执行过渡动画，fadeIn当前要呈现在视窗前的幻灯片
 				slidesControl.children(":eq(" + next + ")")
 					.stop()
 					.fadeIn(this.options.effect.fade.speed, $.proxy(function() {
+						// 动画结束后
 						slidesControl.children(":eq(" + next + ")").css('z-index', '0');
+						// 设置this.animating为false
 						this.animating = false;
+						// 重置this.current属性
 						this.current = next;
+						// 执行完成回调
 						this.options.callback.complete(next + 1);
 					}, this));
 
+			// 如果入淡出动画没有过渡效果
 			} else {
-
 				slidesControl.children(":eq(" + currentSlide + ")")
 					.stop()
 					.fadeOut(this.options.effect.fade.speed, $.proxy(function() {
