@@ -1,0 +1,24 @@
+{
+  "name": "wslides",
+  "version": "0.0.1",
+  "homepage": "https://github.com/superwzx/wSlides",
+  "authors": [
+    "superwzx <wzx175@gmail.com>"
+  ],
+  "description": "wslides is a jquery sides plugin.",
+  "main": "src/wslides.js",
+  "keywords": [
+    "slides"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "jquery": "1.9.1"
+  }
+}

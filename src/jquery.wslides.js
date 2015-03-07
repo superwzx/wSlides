@@ -1,4 +1,7 @@
-
+/**
+ * j@uery Slides Plugin
+ * author: superwzx <wzx175@gmail.com>
+ **/
 (function($) {
 
 	var pluginName = "wslides",
