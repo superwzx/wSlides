@@ -7,8 +7,14 @@ module.exports = function (grunt) {
 					'dist/jquery.wslides.min.js': 'src/jquery.wslides.js'
 				}
 			}
+		},
+		jshint: {
+			foo: {
+				src: ['src/jquery.wslides.js']
+			}
 		}
 	})
 
 	grunt.loadNpmTasks('grunt-contrib-uglify');
+	grunt.loadNpmTasks('grunt-contrib-jshint');
 }

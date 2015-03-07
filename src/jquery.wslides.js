@@ -63,7 +63,7 @@
 		this.options = $.extend(true, {}, defaults, options);
 		this._name = pluginName;
 		this.init();
-	};
+	}
 
 
 	/*****************************************
