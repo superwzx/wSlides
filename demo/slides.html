@@ -13,7 +13,7 @@
 			padding-top:70px;
 		}
 
-		#slides {
+		#slides, #slides2 {
 			display: none;
 			width: 400px;
 		}
@@ -127,12 +127,22 @@
       		<img src="img/4.jpg" />
 		</div>
 	</div>
+
+	<div class="container">
+		<div id="slides2">
+			<img src="img/1.jpg" />
+      		<img src="img/2.jpg" />
+      		<img src="img/3.jpg" />
+      		<img src="img/4.jpg" />
+		</div>
+	</div>
+
 	<script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
 	<script src="../src/jquery.wslides.js"></script>
 	<script>
 		$(function() {
 			$('#slides').wslides({
-				width: 940,
+				width: 1000,
 				height: 528,
 				navigation: false,
 				play: {
@@ -140,6 +150,18 @@
 					pauseOnHover: true,
 					swap: false
 				}
+			});
+
+			$('#slides2').wslides({
+				width: 1000,
+				height: 528,
+				navigation: false,
+				play: {
+					active: false,
+					pauseOnHover: true,
+					swap: false
+				},
+				currentEffect: 'fade'
 			});
 		});	
 	</script>

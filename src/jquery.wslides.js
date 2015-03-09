@@ -450,12 +450,11 @@
 	 * @param number {Number} 幻灯片的索引
 	 **/
 	Plugin.prototype.slide = function (number) {
-
+		var currentSlide = this.current;
 		// 如果幻灯片不在运动中（即animating状态为false时），
 		// 且要移动的位置不是当前
 		if (!this.animating && number !== currentSlide + 1) {
-			var currentSlide = this.current,
-				width = this.options.width,
+			var	width = this.options.width,
 				vector,
 				next,
 				value;
@@ -567,7 +566,7 @@
 		// 且要移动的位置不是当前
 		if (!this.animating && number !== this.current + 1) {
 
-			var currentSlide = this.data.current,
+			var currentSlide = this.current,
 				next,
 				value;
 
