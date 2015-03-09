@@ -4,32 +4,40 @@
 	<meta charset="utf-8">
 	<title>wSlides</title>
 	<meta name="viewport" content="width=device-width">
-	<link rel="stylesheet" href="css/font-awesome.min.css">
 	<style>
 		body {
 			-webkit-font-smoothing: antialiased;
 			font: normal 15px/1.5 "Helvetica Neue", Helvetica, Arial, sans-serif;
 			color: #232525;
-			padding-top:70px;
 		}
 
 		#slides, #slides2 {
 			display: none;
-			width: 400px;
+			width: 1000px;
 		}
 
-		#slides .wslides-navigation {
-			margin-top:3px;
+		.wslides-control {
+			z-index: 0;
 		}
 
-		#slides .wslides-previous {
-			margin-right: 5px;
-			float: left;
+		.wslides-navigation {
+			display: block;			
+			position: absolute;
+			top: 46%;
+			width: 72px;
+			height: 72px;
+			line-height: 100em;
+			overflow: hidden;
 		}
 
-		#slides .wslides-next {
-			margin-right: 5px;
-			float: left;
+		.wslides-previous {
+			background: url(img/wslides.png) no-repeat 0 -96px;
+			left: 6%;
+		}
+
+		.wslides-next {
+			background: url(img/wslides.png) no-repeat 0 -264px;
+			right: 6%;
 		}
 
 		.wslides-pagination {
@@ -40,27 +48,22 @@
 
 		.wslides-pagination li {
 			float: left;
-			margin: 0 1px;
+			margin: 0 2px;
 		}
 
 		.wslides-pagination li a {
 			display: block;
-			width: 13px;
-			height: 0;
-			padding-top: 13px;
-			background-image: url(img/pagination.png);
-			background-position: 0 0;
-			float: left;
+			width: 10px;
+			height: 10px;
+			background: #3d4248;
+			border-radius: 100%;
+			line-height: 100em;
 			overflow: hidden;
 		}
 
 		.wslides-pagination li a.active,
 		.wslides-pagination li a:hover.active {
-			background-position: 0 -13px
-		}
-
-		.wslides-pagination li a:hover {
-			background-position: 0 -26px
+			background: #00AFD8;
 		}
 
 		#slides a:link,
@@ -85,39 +88,12 @@
 			margin: 0 auto
 		}
 
-		@media (max-width: 767px) {
-			body {
-				padding-left: 20px;
-				padding-right: 20px;
-			}
-			.container {
-				width: auto
-			}
-		}
-
-		@media (max-width: 480px) {
-			.container {
-				width: auto
-			}
-		}
-
-		@media (min-width: 768px) and (max-width: 979px) {
-			.container {
-				width: 724px
-			}
-		}
-
-		@media (min-width: 1200px) {
-			.container {
-				width: 1170px
-			}
-		}
-
 	</style>
 </head>
 <body>
-
+	
 	<div class="container">
+		<h3>案例一：slide动画</h3>
 		<div id="slides">
 			<img src="img/1.jpg" />
       		<img src="img/2.jpg" />
@@ -126,7 +102,9 @@
 		</div>
 	</div>
 
+	
 	<div class="container">
+		<h3>案例二：fade动画</h3>
 		<div id="slides2">
 			<img src="img/1.jpg" />
       		<img src="img/2.jpg" />
@@ -135,14 +113,15 @@
 		</div>
 	</div>
 
-	<script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
+	<script src="../lib/jquery.min.js"></script>
 	<script src="../src/jquery.wslides.js"></script>
 	<script>
 		$(function() {
+			// slides动画
 			$('#slides').wslides({
 				width: 1000,
 				height: 528,
-				navigation: false,
+				// navigation: false,
 				play: {
 					active: false,
 					pauseOnHover: true,
@@ -151,6 +130,19 @@
 				}
 			});
 
+			// fade 动画
+			$('#slides2').wslides({
+				width: 1000,
+				height: 528,
+				// navigation: false,
+				play: {
+					active: false,
+					pauseOnHover: true,
+					swap: false,
+					auto: true
+				},
+				currentEffect: 'fade'
+			});
 		});	
 	</script>
 </body>

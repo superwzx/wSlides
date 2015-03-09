@@ -168,7 +168,7 @@
 
 			// 添加prev-button及侦听其click事件
 			prevBtn = $("<a>", {"class": "wslides-previous wslides-navigation", href: "#", title: "Previous", text: "Previous"})
-				.appendTo($el)
+				.appendTo(this.slidesContainer)
 				.on('click', $.proxy(function (e) {
 					this.stop(true);
 					this.previous();
@@ -177,7 +177,7 @@
 
 			// 添加next-button及侦听其click事件
 			nextBtn = $("<a>", {"class": "wslides-next wslides-navigation", href: "#", title: "Next", text: "Next"})
-				.appendTo($el)
+				.appendTo(this.slidesContainer)
 				.on('click', $.proxy(function (e) {
 					this.stop(true);
 					this.next();
@@ -252,9 +252,9 @@
 	 * 设置导航的active样式
 	 * @param num {Number}
 	 **/
-	Plugin.prototype.setPaginationActive = function (num) {
-		var current = num > -1 ? num : this.current;
-		$(".active").removeClass("active");
+	Plugin.prototype.setPaginationActive = function (number) {
+		var current = number > -1 ? number : this.current;
+		$(".active", this.el).removeClass("active");
 		this.pagination.find("li:eq(" + current + ") a").addClass("active");
 	};
 
@@ -280,7 +280,7 @@
 	 **/
 	Plugin.prototype.next = function () {
 		this.direction = "next";
-		this.currentEffect === "fade" ? this.fade() : this.slide();
+		this.options.currentEffect === "fade" ? this.fade() : this.slide();
 	};
 
 
@@ -290,7 +290,7 @@
 	 **/
 	Plugin.prototype.previous = function () {
 		this.direction = "previous";
-		this.currentEffect === "fade" ? this.fade() : this.slide();
+		this.options.currentEffect === "fade" ? this.fade() : this.slide();
 	};
 
 
@@ -305,7 +305,7 @@
 		if (number < 1) {
 			number = 1;
 		}
-		this.currentEffect === "fade" ? this.fade(number) : this.slide(number);
+		this.options.currentEffect === "fade" ? this.fade(number) : this.slide(number);
 	};
 
 
@@ -412,7 +412,7 @@
 			// 注册自动循环播放事件
 			this.playInterval = setInterval($.proxy(function() {
 				this.direction = "next";
-				this.currentEffect === 'fade' ? this.fade() : this.slide();
+				this.options.currentEffect === 'fade' ? this.fade() : this.slide();
 			}, this), this.options.play.interval);
 
 			this.playing = true;
@@ -486,7 +486,7 @@
 			this.setPaginationActive(next);
 
 			var slidesControl = this.slidesControl;
-			// 设置要移动到视窗前幻灯片的样式
+			// 设置要移动到视口幻灯片的样式
 			slidesControl.children(":eq(" + next + ")")
 				.css({
 					display: "block",
@@ -597,7 +597,7 @@
 			this.setPaginationActive(next);
 
 			var slidesControl = this.slidesControl;
-			// 设置要移动到视窗前幻灯片的样式
+			// 设置要移动到视口幻灯片的样式
 			slidesControl.children(":eq(" + next + ")")
 				.css({
 					display: "none",
@@ -609,16 +609,16 @@
 			this.options.callback.start(currentSlide + 1);
 
 			// 如果淡入淡出动画有过渡效果
-			if (this.options.effectOption.fade.crossfade) {
+			if (this.options.effectOptions.fade.crossfade) {
 				// 执行过渡动画，fadeOut当前幻灯片
 				slidesControl.children(":eq(" + this.current + ")")
 					.stop()
-					.fadeOut(this.options.effect.fade.speed);
+					.fadeOut(this.options.effectOptions.fade.speed);
 
-				// 执行过渡动画，fadeIn当前要呈现在视窗前的幻灯片
+				// 执行过渡动画，fadeIn当前要呈现在视口的幻灯片
 				slidesControl.children(":eq(" + next + ")")
 					.stop()
-					.fadeIn(this.options.effect.fade.speed, $.proxy(function() {
+					.fadeIn(this.options.effectOptions.fade.speed, $.proxy(function() {
 						// 动画结束后
 						slidesControl.children(":eq(" + next + ")").css('z-index', '0');
 						// 设置this.animating为false
@@ -633,10 +633,10 @@
 			} else {
 				slidesControl.children(":eq(" + currentSlide + ")")
 					.stop()
-					.fadeOut(this.options.effect.fade.speed, $.proxy(function() {
+					.fadeOut(this.options.effectOptions.fade.speed, $.proxy(function() {
 						slidesControl.children(":eq(" + next + ")")
 							.stop()
-							.fadeIn(this.options.effect.fade.speed, function() {
+							.fadeIn(this.options.effectOptions.fade.speed, function() {
 								slidesControl.children(":eq(" + next + ")").css('z-index', '10');
 							});
 							this.animating = false;
