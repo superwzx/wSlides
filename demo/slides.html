@@ -5,9 +5,12 @@
 	<title>wSlides</title>
 	<meta name="viewport" content="width=device-width">
 	<style>
+		* {
+			margin: 0;
+			padding: 0;
+		}
 		body {
-			-webkit-font-smoothing: antialiased;
-			font: normal 15px/1.5 "Helvetica Neue", Helvetica, Arial, sans-serif;
+			font: normal 15px/1.5 "Helvetica Neue", Arial;
 			color: #232525;
 		}
 
@@ -15,11 +18,9 @@
 			display: none;
 			width: 1000px;
 		}
-
 		.wslides-control {
 			z-index: 0;
 		}
-
 		.wslides-navigation {
 			display: block;			
 			position: absolute;
@@ -29,12 +30,10 @@
 			line-height: 100em;
 			overflow: hidden;
 		}
-
 		.wslides-previous {
 			background: url(img/wslides.png) no-repeat 0 -96px;
 			left: 6%;
 		}
-
 		.wslides-next {
 			background: url(img/wslides.png) no-repeat 0 -264px;
 			right: 6%;
@@ -45,12 +44,10 @@
 			float: right;
 			list-style: none;
 		}
-
 		.wslides-pagination li {
 			float: left;
 			margin: 0 2px;
 		}
-
 		.wslides-pagination li a {
 			display: block;
 			width: 10px;
@@ -60,32 +57,18 @@
 			line-height: 100em;
 			overflow: hidden;
 		}
-
-		.wslides-pagination li a.active,
-		.wslides-pagination li a:hover.active {
+		.wslides-pagination li a.active {
 			background: #00AFD8;
 		}
-
-		#slides a:link,
-		#slides a:visited {
-			color: #333
-		}
-
-		#slides a:hover,
-		#slides a:active {
-			color: #9e2020
-		}
-
 		.navbar {
-			overflow: hidden
+			overflow: hidden;
 		}
 	
 		#slides {
-			display: none
+			display: none;
 		}
-
 		.container {
-			margin: 0 auto
+			margin: 0 auto;
 		}
 
 	</style>
