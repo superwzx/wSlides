@@ -140,7 +140,8 @@
 		this.slidesContainer = this.slidesControl.parent()
 			.css({
 				overflow: "hidden",
-				position: "relative"
+				position: "relative",
+				height: '100%'
 			});
 
 		$el.show();
