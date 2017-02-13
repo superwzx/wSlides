@@ -16,12 +16,15 @@
 
 		#slides, #slides2 {
 			display: none;
-			width: 1000px;
+			width: 500px;
 		}
-		.wslides-control {
+		.w-slider-control {
+
 			z-index: 0;
+
+			/*border: 1px solid red;*/
 		}
-		.wslides-navigation {
+		.w-slider-navigation {
 			display: block;			
 			position: absolute;
 			top: 46%;
@@ -30,25 +33,25 @@
 			line-height: 100em;
 			overflow: hidden;
 		}
-		.wslides-previous {
+		.w-slider-previous {
 			background: url(img/wslides.png) no-repeat 0 -96px;
 			left: 6%;
 		}
-		.wslides-next {
+		.w-slider-next {
 			background: url(img/wslides.png) no-repeat 0 -264px;
 			right: 6%;
 		}
 
-		.wslides-pagination {
+		.w-slider-pagination {
 			margin: 6px 0 0;
 			float: right;
 			list-style: none;
 		}
-		.wslides-pagination li {
+		.w-slider-pagination li {
 			float: left;
 			margin: 0 2px;
 		}
-		.wslides-pagination li a {
+		.w-slider-pagination li a {
 			display: block;
 			width: 10px;
 			height: 10px;
@@ -57,7 +60,7 @@
 			line-height: 100em;
 			overflow: hidden;
 		}
-		.wslides-pagination li a.active {
+		.w-slider-pagination li a.active {
 			background: #00AFD8;
 		}
 		.navbar {
@@ -85,47 +88,25 @@
 		</div>
 	</div>
 
-	
-	<div class="container">
-		<h3>案例二：fade动画</h3>
-		<div id="slides2">
-			<img src="img/1.jpg" />
-      		<img src="img/2.jpg" />
-      		<img src="img/3.jpg" />
-      		<img src="img/4.jpg" />
-		</div>
-	</div>
 
 	<script src="../lib/jquery.min.js"></script>
 	<script src="../src/jquery.wslides.js"></script>
 	<script>
 		$(function() {
 			// slides动画
-			$('#slides').wslides({
-				width: 1000,
+			$('#slides').wSlider({
+				width: '100%',
 				height: 528,
 				// navigation: false,
-				play: {
-					active: false,
-					pauseOnHover: true,
-					swap: false,
-					auto: true
-				}
+//				play: {
+//					active: false,
+//					pauseOnHover: true,
+//					swap: false,
+//					auto: true
+//				}
 			});
 
-			// fade 动画
-			$('#slides2').wslides({
-				width: 1000,
-				height: 528,
-				// navigation: false,
-				play: {
-					active: false,
-					pauseOnHover: true,
-					swap: false,
-					auto: true
-				},
-				currentEffect: 'fade'
-			});
+
 		});	
 	</script>
 </body>
